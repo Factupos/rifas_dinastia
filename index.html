@@ -3560,23 +3560,23 @@ function normalizeBoolCell(v){
   return null; // desconocido
 }
 async function getBlockedFlagFast(){
-  // cache rápido (pero corto)
-  const bc = loadBlockCache();
-  if(bc && !bc.stale) return bc.isBlocked;
-
-  try{
-    const txt = await fetchCsvBySheetRange(BLOCK_SHEET_NAME, BLOCK_CELL_RANGE, 4500);
-    const rows = parseCSV(txt);
-    const cell = rows?.[1]?.[0] ?? rows?.[0]?.[0] ?? '';
-    const val = normalizeBoolCell(cell);
-    if(val === null) throw new Error('Valor bloqueo inválido: ' + cell);
-    saveBlockCache(val);
-    return val;
-  }catch(_){
-    // Si falla, usa cache viejo si hay; si no, asume NO bloqueado para no dejarte tirado
-    if(bc) return bc.isBlocked;
-    return false;
-  }
+  // Se eliminó la lectura obligatoria del caché para que SIEMPRE consulte el Google Sheet en vivo.
+  try{
+    const txt = await fetchCsvBySheetRange(BLOCK_SHEET_NAME, BLOCK_CELL_RANGE, 4500);
+    const rows = parseCSV(txt);
+    const cell = rows?.[1]?.[0] ?? rows?.[0]?.[0] ?? '';
+    const val = normalizeBoolCell(cell);
+    if(val === null) throw new Error('Valor bloqueo inválido: ' + cell);
+    
+    // Guardamos en caché solo por si el usuario se queda sin internet en el futuro
+    saveBlockCache(val); 
+    return val;
+  }catch(_){
+    // Si falla la conexión a internet, usamos el caché como plan de emergencia
+    const bc = loadBlockCache();
+    if(bc) return bc.isBlocked;
+    return false;
+  }
 }
 
 /* =========================================================
