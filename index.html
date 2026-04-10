@@ -546,9 +546,14 @@ body.search-has-text #raffles{ display:none !important; }
   outline: none;
   cursor: pointer;
   border: none;
-  transform: translateZ(0);
   overflow: hidden;
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background 0.2s ease;
+  
+  /* ⚡ OPTIMIZACIÓN EXTREMA PARA MÓVILES (GPU) */
+  transform: translateZ(0);
+  will-change: transform, box-shadow, background;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .raffle .num { position: relative; z-index: 2; font-size: clamp(38px,8.5vw,48px); line-height: 1;
@@ -1722,10 +1727,11 @@ header{
   border: 1px solid rgba(0,0,0,.1) !important;
   box-shadow: 0 4px 10px rgba(0,0,0,.1) !important;
 }
-.raffle.selected{
+.raffle.selected {
   background: linear-gradient(135deg, #FF9800, #FF6D00) !important;
   box-shadow: 0 8px 20px rgba(255, 109, 0, .3) !important;
-  border: none !important;
+  /* El truco: en lugar de quitar el borde, lo hacemos transparente */
+  border: 1px solid transparent !important; 
 }
 .raffle.selected .tick{
   background: #ffffff !important;
