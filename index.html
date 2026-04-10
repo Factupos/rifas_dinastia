@@ -2293,6 +2293,34 @@ header{
     right: -4px !important;
   }
 }
+
+  /* =========================================================
+   MODO CATÁLOGO (Sin carrito, sin selección)
+   ========================================================= */
+#cartPanel, .finish-top-button, .raffle .tick {
+    display: none !important;
+}
+
+/* Centrar el botón Aleatorio al quitar el de Finalizar */
+.action-buttons {
+    justify-content: center !important;
+}
+.random-button {
+    max-width: 320px !important;
+}
+
+/* Anular interacciones y animaciones de selección en las boletas */
+.raffle {
+    cursor: default !important;
+}
+.raffle:hover, .raffle:active, .raffle.tap-effect {
+    transform: none !important;
+    box-shadow: 
+      0 8px 20px rgba(0, 0, 0, 0.08), 
+      inset 2px 2px 6px rgba(255, 255, 255, 0.9), 
+      inset -2px -2px 6px rgba(0, 0, 0, 0.04) !important;
+    background: linear-gradient(145deg, #F8FAFC 0%, #E2E8F0 100%) !important;
+}
 </style>
 
 </head>
@@ -3720,7 +3748,7 @@ function setAllFromFreeList(freeList){
   for(const n of freeList){ map[n] = 'libre'; }
   ALL = map;
 }
-function sampleDailyFromFreeList(freeList, target=240){
+function sampleDailyFromFreeList(freeList, target=500){
   const L = freeList.length;
   if(L<=target) return [...freeList];
   const out = freeList.slice(0, target);
@@ -3749,7 +3777,7 @@ function loadDailyFromCache(){
 function pickDaily(force=false){
   if(!force && loadDailyFromCache()) return;
   const libres = Object.keys(ALL||{}).filter(k=>ALL[k]==='libre');
-  DAILY = sampleDailyFromFreeList(libres, 240);
+  DAILY = sampleDailyFromFreeList(libres, 500);
   persistDaily();
 }
 
@@ -3966,41 +3994,10 @@ function showChoiceFromTile(tile, n){
   box.onclick=(e)=> e.stopPropagation();
 }
 function onTileTap(el, num, pt){
-  if(!el) return;
+  // Modo catálogo activado: Se deshabilita la selección y el carrito.
+  // Mantenemos el número en formato texto para conservar ceros a la izquierda.
   const n = pad4(num);
-
-  // Deselección instantánea
-  if(CART_ITEMS.includes(n)){
-    removeFromCart(n);
-    msg('Removida del carrito: ' + n, false);
-    el.dataset.busy = '';
-    return;
-  }
-
-  // Seguro de spam
-  if(el.dataset.busy === '1') return;
-
-  const st = ALL?.[n];
-  if(st && st !== 'libre'){
-    msg('Boleta ocupada', true);
-    return;
-  }
-
-  el.dataset.busy = '1';
-  hideMsg();
-
-  // ✅ NUEVO EFECTO 100% NATIVO (Adiós lag y pantallas negras)
-  el.classList.add('tap-effect');
-  
-  // Quitamos el efecto después de 200 milisegundos (pura fluidez)
-  setTimeout(() => {
-    el.classList.remove('tap-effect');
-    el.dataset.busy = '';
-  }, 200); 
-    
-  // Lo enviamos directo al carrito
-  addToCart(n);
-  msg('Agregado al carrito: ' + n, false);
+  return; 
 }
 
 /* =========================
